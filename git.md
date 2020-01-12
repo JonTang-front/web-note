@@ -20,11 +20,11 @@ $ git add .
 $ git commit -am 注释
 ##提交修改文件到git管理
 
-$ git pull
-##从远程分支拉取文件
+$ git pull [远程仓库名] [远程分支名]
+##从远程分支拉取文件，默认origin仓库master分支
 
-$ git push
-##推送文件到远程分支
+$ git push [-u] [远程仓库名] [远程分支名]
+##-u 与远程分支建立连接并推送文件到远程分支，默认origin仓库master分支
 ```
 ### git常用命令
 ```
@@ -118,47 +118,81 @@ $ git reset HEAD <file>
 ```
 
 ```
-$ git checkout <branchname>
+$ git checkout <branch-name>
 ##切换分支
 ```
 ### git远程仓库
-远程仓库是指托管在因特网或其他网络中的你的项目的版本库。
-
-- git clone url/简写 别名 - 拷贝远程仓库
-- origin - Git 给你克隆的仓库服务器的默认名字
--  git remote - 查看远程仓库及简写（远程仓库URL的简写，可以用URL拷贝远程仓库，也可以用简写拷贝）
--  git remote add <简写> <url> - 添加远程仓库
--  git fetch [remote-name] - 拉取远程仓库中的所有数据，但是不会自动合并或修改你当前的工作， 当准备好时你必须手动将其合并入你的工作，一般不用此命令
--  git pull - 从最初克隆的服务器上抓取数据并自动尝试合并到当前所在的分支
--  git push [remote-name] [branch-name] - 推送到远程仓库
--  git remote show [remote-name] - 查看远程仓库更多信息
-- git remote rename [old-name] [new-name] - 远程仓库重命名
-- git remote rm [remote-name] - 移除一个远程仓库
-- git config --global alias.别名 命令 - git命令设置别名
-
+远程仓库是指托管在因特网或其他网络中的你的项目的版本库。==默认的远程仓库名称是origin，分支是master==
+##### 创建远程仓库
 ```
-$ git config --global alias.ci commit   git ci 等价于 git commit
-$ git config --global alias.st status   git st 等价于 git status
+##新建目录
+$ mkdir [目录名]
+$ cd [目录名]
+
+##初始化本地仓库
+$ git init
+
+##添加README
+$ touch README.md
+$ git add README.md
+
+##提交
+$ git commit -am "readme"
+
+##添加远程仓库（本地仓库和远程仓库建立连接）
+$ git remote add [origin:远程仓库名] [git@gitee.com:secuTang/test.git:远程仓库地址]
+
+##推送代码到远程仓库
+$ git push -u [origin:远程仓库名] [master:远程仓库分支]
+```
+##### 多个远程仓库
+```
+##添加多个远程仓库
+$ git remote add [A:远程仓库名] [git@gitee.com:secuTang/A.git:远程仓库地址]
+$ git remote add [B:远程仓库名] [git@gitee.com:secuTang/B.git:远程仓库地址]
+
+##与多个远程仓库建立连接
+$ git push -u 仓库A <branch-name>
+##相当于
+$ git branch --set-upstream-to=仓库A/<branch-name> <本地分支名>
+$ git push 仓库A <branch-name>
+
+##从远程仓库拉取代码
+$ git pull 仓库A <branch-name>
+```
+
+
+
+##### 其他操作
+```
+##查看远程仓库更多信息
+$ git remote show [remote-name]
+
+##远程仓库重命名
+$ git remote rename [old-name] [new-name]
+
+##移除远程仓库
+$ git remote rm [remote-name]
 ```
 ### git分支
 
 ```
-$ git checkout -b dev
 ##创建分支并切换到新创建的分支
+$ git checkout -b dev origin/dev
 ##相当于
 $ git branch dev
 $ git checkout dev
 
-$ git branch
 ##查看所有分支
+$ git branch -a
 
-$ git checkout master
 ##切换分支
+$ git checkout <branch-name>
 
-$ git merge <name>
 ##合并分支到当前分支
+$ git merge <branch-name>
 ##例如在master分支下执行命令，则合并<name>分支到master分支
 
-$ git branch -d <name>
+$ git branch -d <branch-name>
 ##删除分支
 ```
