@@ -1131,8 +1131,61 @@ history.push({
     state: { fromDashboard: true }
 })
 ```
-#### 获取路由参数
-v4.0+版本，通过useParams hook获取路由参数；
+#### 路由参数
+##### params方式
+简单快捷，成为页面路由的一部分，作为路由匹配，刷新页面不会丢失。但只能传字符串，传递对象需要JSON.stringify转换
+###### 传参
+```
+//路由配置
+<Route path="/about/:id" component={About} />
+
+<Link to={'/about/2' }>About</Link>
+//或者
+this.props.history.push('/about/2')
+```
+###### 获取
+```
+componentDidMount(){
+    console.log(this.props.match.params.id);
+}
+```
+##### query方式
+以“url?参数”形式传递，不作为路由匹配，刷新页面时参数丢失
+###### 传参
+```
+//路由配置
+<Route path="/contact" component={Contact} />
+
+<Link to={{pathname:'/contact',query:{id:'456'}}}>contact</Link>
+//或者
+this.props.history.push({pathname :'/contact',query :{id:'456'}})
+```
+###### 获取
+```
+componentDidMount(){
+   console.log(this.props.location.query.id);
+}
+```
+##### state方式
+###### 传参
+```
+//路由配置
+<Route path="/contact" component={Contact} />
+
+<Link to={{pathname:'/contact',state:{id:'456'}}}>contact</Link>
+//或者
+this.props.history.push({pathname :'/contact',state :{id:'456'}})
+```
+###### 获取
+```
+componentDidMount(){
+   console.log(this.props.location.state.id);
+}
+```
+==以上三种路由获取参数的方式，都必须通过withRouter包裹组件才能在props中获取location和match==
+
+v4.0+版本，对于无状态组件（Function Component），还可以通过useParams hook获取路由参数；
+
 v4.0-版本，Router传入history context，组件中通过this.props.history获取路由参数
 ### 五，路由钩子
 #### react-router@3.x
