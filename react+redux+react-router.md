@@ -419,7 +419,7 @@ React.children提供了一套处理this.props.children的工具，一般和React
 5. React.Children.toArray()，把this.props.children转换成Array，对children排序时需要使用。
 
 ### 三，组件
-#### Class组件（有状态组件，容器组件） 
+#### Class组件（有状态组件，类组件） 
 使用ES6的class继承React.Component定义组件，自己维护内部状态，以及接收父组件传递的props数据。
 ```
 import React, {Component} from 'react';
@@ -671,9 +671,9 @@ const ref = React.createRef();
 ```
 
 ### 七，组件之间通信
-#### Props
+#### 1，Props
 父组件通过props传递数据给子组件，子组件通过调用props中的回调函数通知父组件状态修改
-#### Context
+#### 2，Context
 react是自上而下的单向数据流，在深层嵌套组件中通过props传递值，会使得很多中间组件发生不必要的props传递。Context提供了一种在组件之间共享此类值的方式，而不必显式地通过组件树的逐层传递 props。react提供了一组操作Context的API：
 1. createContext(defaultValue) —— 创建Context，defaultValue为Context默认值，Provider没有显示指定value的时候生效；
 2. Context.Provider —— Provider React 组件，接收一个value属性，传递给消费组件。多个 Provider 也可以嵌套使用，里层的会覆盖外层的数据。value值发生变化时，它内部的所有消费组件都会重新渲染。；
@@ -712,7 +712,55 @@ export default class Grandson extends Component{
 //this.context获取Context数据
 ```
 
-#### redux
+#### 3，redux
+参考下面redux介绍
+#### 4，EventBus
+```
+//emitter.js
+class EventEmitter {
+  constructor () {
+    // 存储事件
+    this._events = this._events || new Map()
+  }
+  // 监听事件
+  addListener (type, fn) {
+    const handle = this._events.get(type);
+    if (!handle) {
+        this._events.set(type, [fn]);
+    }else{
+        this._events.set(type, [...handle, fn]);
+    }
+  }
+  // 触发事件
+  emit (type, ...args) {
+    let handle = this._events.get(type);
+    if(handle){
+        handle.map(fn => {
+            fn.apply(this, args);
+        });
+    }else{
+        handler.call(this);
+    }
+    return true;
+  }
+}
+const emitter = new EventEmitter();
+export default emitter
+
+
+import emitter from 'emitter';
+// 监听事件
+emitter.addListener('ages', age => {
+  console.log(age);
+});
+// 触发事件
+emitter.emit('ages', 18);  // 18
+```
+npm包
+```
+npm install events -S
+```
+
 ## React进阶
 ### 一，高阶组件(HOC，Higher Order Components)
 高阶组件是参数为组件，返回值为新组件的==函数==
@@ -1403,7 +1451,7 @@ import Shop from 'lazy!./view/Shop';
 
 ```
 
-## Redux
+## Redux（单向数据流）
 ### 一，flux & redux
 ### 二，redux三大原则
 ##### 单一数据源
@@ -1564,5 +1612,4 @@ export default connect(mapStateToProps, mapDispatchToProps)(Home);
 2. mapDispatchToProps：把dispatch映射到组件的props中。参数是dispatch
 ==mapDispatchToProps可以省略，dispatch会被connect以props参数形式传入组件，可以在组件中主动dispatch action==
 
-### 六，redux中间件
-## Mobx
+## Mobx（响应式数据流）
