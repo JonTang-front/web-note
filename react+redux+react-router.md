@@ -1030,6 +1030,14 @@ export default class Admin extends Component{
 使用场景
 1. 用户根据用户ID加载用户信息页面；
 2. 根据产品ID加载产品详情页面
+```
+//路由配置
+<Route path="/user/:id" component={UserInfo} />
+
+<Link to={'/user/2' }>About</Link>
+//或者
+this.props.history.push('/user/2')
+```
 
 #### 路由跳转
 ##### 1，标签跳转
@@ -1041,12 +1049,16 @@ react-router提供 <Link> 和 <NavLink> 实现标签跳转，这里只举例说�
 ## 2，to：Object
 <Link to={{
 pathname: '/courses',
-search: '?sort=name',
+search: 'sort=name',
 hash: '#the-hash',
-state: { fromDashboard: true }
+query: { data: 1 },
+state: { fromDashboard: true },
+replace: false
 }}>courses</Link>
 //pathname：跳转路径
-//search：参数
+//search：url参数，以“?sort=name”拼接在url中
+//query：路由参数，刷新页面后丢失
+//state：路由参数，刷新页面后不会丢失
 //replace：替换历史堆栈中的当前条目，而不是添加新条目
 
 ## 3，activeClassName：String & activeStyle: object
@@ -1073,6 +1085,7 @@ export default withRouter(MyComponent);
 //实际开发中往往需要在其他地方实现跳转，比如redux数据修改的时候
 ```
 ###### 使用Context
+react-router@4.x 在 Router 组件中通过Context暴露了一个router对象，可以在子组件中通过Context获取router对象，从而获取history
 ```
 import React from "react";
 import PropTypes from "prop-types";
@@ -1096,9 +1109,10 @@ class MyComponent extends React.Component {
 ```
 // src/history.js
 //BrowserRouter
-export { createBrowserHistory } from 'history';
+import { createBrowserHistory } from 'history';
 //HashRouter
-export { createHashHistory } from 'history';
+import { createHashHistory } from 'history';
+export default createHashHistory()
 
 // src/index.js
 import { Router, Link, Route } from 'react-router-dom';
@@ -1150,7 +1164,7 @@ componentDidMount(){
 }
 ```
 ##### query方式
-以“url?参数”形式传递，不作为路由匹配，刷新页面时参数丢失
+不作为路由匹配，location.query中获取，刷新页面时参数丢失
 ###### 传参
 ```
 //路由配置
@@ -1167,6 +1181,7 @@ componentDidMount(){
 }
 ```
 ##### state方式
+不作为路由匹配，location.state中获取，刷新页面时参数不会丢失。==路由传参首选==
 ###### 传参
 ```
 //路由配置
@@ -1184,9 +1199,9 @@ componentDidMount(){
 ```
 ==以上三种路由获取参数的方式，都必须通过withRouter包裹组件才能在props中获取location和match==
 
-v4.0+版本，对于无状态组件（Function Component），还可以通过useParams hook获取路由参数；
+- v4.0+版本，对于无状态组件（Function Component），还可以通过useParams hook获取路由参数；
+- v4.0-版本，Router传入history context，组件中通过this.props.history获取路由参数
 
-v4.0-版本，Router传入history context，组件中通过this.props.history获取路由参数
 ### 五，路由钩子
 #### react-router@3.x
 react-routerV3.0-提供onEnter 和 onLeave作为路由钩子函数，分别在路由进入和离开的时候执行
