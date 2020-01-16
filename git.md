@@ -193,6 +193,9 @@ $ git checkout <branch-name>
 $ git merge <branch-name>
 ##例如在master分支下执行命令，则合并<name>分支到master分支
 
-$ git branch -d <branch-name>
-##删除分支
+$ git branch -D <branch-name>
+##删除本地分支
+
+$ git push <远程仓库> --delete <branch-name>
+##删除远程分支
 ```
