@@ -1488,8 +1488,8 @@ reducer必须是纯函数，不能有任何产生副作用的操作，例如new 
 所谓异步action，即action creator不再像同步action creator那样返回一个object标识action，而是返回一个函数，函数参数是dispatch，在函数内部执行异步操作，并根据操作结果，dispatch同步action更新state。
 #### 2，middleware（中间件）
 提供位于 action 被发起之后，到达 reducer 之前的操作。redux生态中最常用的两个解决异步操作的middleware即：[redux-saga](https://redux-saga-in-chinese.js.org/)，[redux-thunk](https://github.com/reduxjs/redux-thunk)
-- 关于redux-saga，参考相关笔记
-- 关于redux-thunk，参考相关笔记
+- 关于redux-saga，[参考相关笔记](https://github.com/JonTang-front/web-note/blob/master/redux-saga.md)
+- 关于redux-thunk，[参考相关笔记](https://github.com/JonTang-front/web-note/blob/master/redux-thunk.md)
 ### 五，实战
 #### 1，redux & react-redux
 **redux** 是一个独立的应用状态管理工具，独立于react之外，可以用于任何前端架构
