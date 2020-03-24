@@ -838,6 +838,92 @@ const MyComponent = lazy(() => import("./MyComponent.js"));
 React.Suspense也是一种虚拟组件，类似于Fragment，仅用作类型标识。Suspense组件可以放在（组件树中）Lazy组件上方的任意位置，并且下方可以有多个Lazy组件。只要还有还没回来的Lazy组件，就渲染fallback指定的内容。React从框架层对用户体验提出强烈要求，==**没被Suspense包起来的Lazy组件会报错**==。
 
 ### 四，Hook
+Hook是一些可以让你在函数组件里使用react state和生命周期的函数，开发者不需要写class组件也能使用react特性。规定：
+1. 只能在函数组件或者自定义的 Hook 中使用Hook；
+2. 只能在函数最外层使用Hook，不能在循环、条件判断或者子函数中调用。
+
+可以通过eslint-plugin-react-hooks插件来规范项目中使用的Hook
+#### React自带Hook
+##### 1，useState
+用于函数组件添加state变量。普通函数退出后变量就会”消失”，而 state 中的变量会被 React 保留
+```
+import React, { useState } from 'react';
+function Example() {
+  // 声明一个叫 "count" 的 state 变量
+  const [count, setCount] = useState(0);
+//左边采用数组解析构，第一个变量是自定义state，第二个是对应的操作函数
+//useState参数是state变量的初始值，可以是基本数据类型，数组，对象等
+  return (
+    <div>
+      <p>You clicked {count} times</p>
+      <button onClick={() => setCount(count + 1)}>
+        Click me
+      </button>
+    </div>
+  );
+}
+
+## 相当于class组件的this.state
+this.state = { count: 0 };
+```
+用定义state变量时返回的操作函数修改state的值
+```
+setCount(1);
+
+##相当于class组件的setState
+this.setState({ count: this.state.count + 1 })};
+```
+==与setState不同的是，更新 state   变量总是替换它而不是合并它==
+##### 2，useEffect
+useEffect Hook 为函数组件提供执行副作用操作的能力，例如数据获取，设置订阅以及手动更改 React 组件中的 DOM 等。useEffect Hook  相当于componentDidMount，componentDidUpdate 和 componentWillUnmount 这三个函数的组合
+```
+function Example() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    document.title = `You clicked ${count} times`;
+  });
+}
+```
+在函数组件内部调用useEffect hook，参数是一个回调函数（回调函数称之为effect）。在函数组件发生渲染时，都会执行该回调函数（包括首次渲染和更新渲染）
+
+如果想要清除副作用操作（effect），例如内存回收等，需要回调函数（effect）返回一个函数执行清除操作。在React 会在组件卸载的时候执行返回的函数进行清除操作
+```
+import React, { useState, useEffect } from 'react';
+
+function FriendStatus(props) {
+  const [isOnline, setIsOnline] = useState(null);
+
+  useEffect(() => {
+    function handleStatusChange(status) {
+      setIsOnline(status.isOnline);
+    }
+
+    ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
+    // Specify how to clean up after this effect:
+    return function cleanup() {
+      ChatAPI.unsubscribeFromFriendStatus(props.friend.id, handleStatusChange);
+    };
+  });
+
+  if (isOnline === null) {
+    return 'Loading...';
+  }
+  return isOnline ? 'Online' : 'Offline';
+}
+```
+##### 3，其他react hook
+1. useContext
+2. useReducer
+3. useCallback
+4. useMemo
+5. useRef
+6. useImperativeHandle
+7. useLayoutEffect
+8. useDebugValue
+
+#### 自定义Hook
+自定义Hook也是一个普通的JavaScript函数，可以在函数中执行react hook，且函数名必须以“use”开头，否则React 将无法自动检查你的 Hook 是否违反了 Hook 的规则
 
 ### 五，性能优化
 #### React.PureComponent
