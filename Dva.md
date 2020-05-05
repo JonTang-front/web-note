@@ -1,4 +1,3 @@
-### [umi](https://umijs.org/zh/guide/)
 ### [dva](https://dvajs.com/guide/getting-started.html)
 #### 一，创建新应用
 ##### 1，安装dva-cli
@@ -230,5 +229,3 @@ const UserPageComponent = dynamic({
   component: () => import('./routes/UserPage'),
 });
 ```
-
-### umi与dva结合实战
