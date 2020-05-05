@@ -326,7 +326,7 @@ export default {
 #### 运行时配置
 umi 约定 src 目录下的 app.js 为运行时的配置文件，与dva配置在同一个文件
 ##### patchRoutes
-动态修改路由，参数是应用的路由配置
+动态修改路由，参数是应用的路由配置，直接修改routes，不做任何返回
 ```
 export function patchRoutes(routes) {
   routes[0].unshift({
@@ -335,10 +335,72 @@ export function patchRoutes(routes) {
   });
 }
 ```
+应用场景：
+- 和 render 配合使用，请求服务端根据响应动态更新路由；
+- 修改全部路由，加上某个前缀
 ##### render
 
+```
+export function render(oldRender) {
+  setTimeout(oldRender, 1000);
+}
+```
+应用场景：
+- 渲染应用之前做权限校验，不通过则跳转到登录页
+##### onRouteChange
+监听路由初始创建和切换，相当于vue-router的beforeEach路由守卫钩子
+```
+export function onRouteChange({ location, routes, action }) {
+  
+}
+```
+##### rootContainer
+用于修饰react最外层根组件或者在根组件外面再包裹一层。参数container是根组件，且必须返回一个react组件（常用React.createElement创建）
+```
+export function rootContainer(container) {
+  const DvaContainer = require('@tmp/DvaContainer').default;
+  return React.createElement(DvaContainer, null, container);
+}
+```
+应用场景：
+- dva、intl 等需要在外层有个 Provider 的场景
 
-#### 常规配置
+##### modifyRouteProps
+修改传给路由组件的 props 。常用于对特定的路由参数处理，参数props是原始props，{ route } 是当前路由配置，且必须返回新的props
+```
+export function modifyRouteProps(props, { route }) {
+  return { ...props, foo: 'bar' };
+}
+```
+
+#### 基本配置
+##### plugins: []
+插件配置，如umi-plugin-react。支持npm 依赖、相对路径或绝对路径。相对路径是相对项目根目录，绝对路径采用${__dirname}
+
+##### routes: []
+配置式路由，与react-router@4配置基本一致。
+
+注：
+- 嵌套路由，父路由可不指定component，默认匹配第一个子路由对应的component；
+
+##### disableRedirectHoist: Boolean
+禁用 redirect 上提，即禁止把所有 redirect 声明提到路由最前面进行匹配
+
+##### history: String
+指定 history 类型，可选 browser、hash 和 memory
+
+##### outputPath: String
+指定打包输出路径，默认值 ./dist
+
+##### base: String
+指定 react-router 的 base，部署到非根目录时需要配置。默认值 /
+
+##### publicPath: String
+指定 webpack 的 publicPath，指向静态资源文件所在的路径。默认值 /
+
+##### context: {}
+配置全局 context，会覆盖到每个 pages 里的 context
+
 #### webpack配置
 ### [API介绍](https://umijs.org/zh/api/)
 ##### 路由相关
