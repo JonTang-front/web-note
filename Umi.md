@@ -402,6 +402,115 @@ export function modifyRouteProps(props, { route }) {
 配置全局 context，会覆盖到每个 pages 里的 context
 
 #### webpack配置
+umi集成了webpack-chain，通过chainWebpack扩展或修改 webpack 配置。如：
+```
+chainWebpack(config, { webpack }) {
+  // 设置 alias
+  config.resolve.alias.set('a', 'path/to/a');
+
+  // 删除进度条插件
+  config.plugins.delete('progress');
+  
+  //css的修改
+  config.plugin('extract-css').use(require('mini-css-extract-plugin'), [
+    	{
+    		filename: `[name].css`,
+    		chunkFilename: `[name].[contenthash:8].chunk.css`,
+    	},
+    ]);
+  //js的修改
+  config.output.filename('[name].js');
+}
+```
+同时，umi把webpack基本配置单独抛出，可以直接在.umirc.js中配置。如：
+```
+import path from 'path';
+import pxToViewPort from 'postcss-px-to-viewport';
+export default {
+  treeShaking: true,
+  plugins: [
+    // ref: https://umijs.org/plugin/umi-plugin-react.html
+    ['umi-plugin-react', {
+      antd: true,
+      dva: true,
+      dynamicImport: { webpackChunkName: true },
+      title: 'umi-admin',
+      dll: false,
+      
+      routes: {
+        exclude: [
+          /models\//,
+          /services\//,
+          /model\.(t|j)sx?$/,
+          /service\.(t|j)sx?$/,
+          /components\//,
+        ],
+      },
+    }],
+  ],
+  alias: {
+    Components: path.resolve(__dirname, 'src/components/'),
+    Util: path.resolve(__dirname, 'src/util/'),
+    Api: path.resolve(__dirname, 'src/api/')
+  },
+  //postCss插件配置
+  extraPostCSSPlugins: [
+    pxToViewPort({
+      viewportWidth: 375,
+      viewportHeight: 667,
+      unitPrecision: 5,
+      viewportUnit: 'vw',
+      selectorBlackList: [],
+      minPixelValue: 1,
+      mediaQuery: false,
+    }),
+  ],
+  devServer：{
+    ...
+  },
+  "proxy": {
+    "/api": {
+      "target": "http://localhost:8000/",
+      "changeOrigin": true,
+      "pathRewrite": { "^/api" : "" }
+    }
+  }
+}
+```
+#### 环境变量
+umi环境变量是UMI_ENV，可以指定UMI_ENV的值获取不同的配置文件。如：
+```
+UMI_ENV=local
+.umirc.local.js
+
+UMI_ENV=cloud
+.umirc.local.js
+```
+**不管什么环境下的配置文件，最终都会和.umirc.js合并后返回。.umirc.js的优先级最高**
+### 部署
+##### 部署 html 到非根目录
+项目采用browserRouter且部署到非根目录时，路由匹配不到，导致页面没有任何展示也不报错。如果想把项目部署到自定义目录，需要配置base。如：
+```
+export default {
+  base: '部署目录',  //默认是 / ，根目录
+};
+```
+还可以修改项目路由方式，改外hashRouter。如：
+```
+export default {
+  history: 'hash',
+};
+```
+##### 静态资源加载
+如果项目的静态资源放在非跟目录，或者通过cdn访问，需要通过webpack的publicPath指定静态资源访问路径。如：
+```
+export default {
+  publicPath: "静态资源访问路径、cdn"
+}
+```
+
+
+
 ### [API介绍](https://umijs.org/zh/api/)
 ##### 路由相关
 ```
