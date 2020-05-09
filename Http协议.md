@@ -4,6 +4,9 @@
 2. 无状态：无状态是指协议对于事务处理没有记忆能力；
 3. 灵活：HTTP允许传输任意类型的数据对象，设置请求头的Content-Type字段；
 
+
+## Http请求
+
 #### 请求报文
 - 请求行：请求方法（get，post，put，delete等）、请求的url、http协议及版本；
 - 请求头：Content-Type，Cookie，Cache-Control，Referer等；
@@ -16,7 +19,6 @@
 - 空行：与请求报文的空行一样；
 - 响应体：服务器返回的数据
 
-## Http请求
 http方法包括以下几个：
 - GET：获取资源；
 - POST：传输资源；
