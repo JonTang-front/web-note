@@ -159,7 +159,23 @@ class Promise {
   }
 }
 ```
-##### 8，实现浅拷贝
+##### 8，Promisify实现
+```
+function promisify(fn) {
+    return function () {
+        var args = Array.prototype.slice.call(arguments);
+        return new Promise(function (resolve) {
+            args.push(function (result) {
+                resolve(result);
+            });
+            fn.apply(null, args);
+        })
+    }
+}
+```
+
+
+##### 9，实现浅拷贝
 
 ```
 // 1. ...实现
@@ -169,7 +185,7 @@ let copy1 = {...{x:1}}
 
 let copy2 = Object.assign({}, {x:1})
 ```
-##### 9，实现一个基本的深拷贝
+##### 10，实现一个基本的深拷贝
 
 ```
 // 1. JOSN.stringify()/JSON.parse()
@@ -187,30 +203,42 @@ function deepClone(obj) {
   return copy
 }
 ```
-##### 10，实现一个基本的Event Bus
-
+##### 11，实现一个基本的Event Bus
+常用于解决组件之间的通信问题（发布订阅模式）
 ```
-// 组件通信，一个触发与监听的过程
+//emitter.js
 class EventEmitter {
   constructor () {
     // 存储事件
-    this.events = this.events || new Map()
+    this._events = this._events || new Map()
   }
   // 监听事件
   addListener (type, fn) {
-    if (!this.events.get(type)) {
-      this.events.set(type, fn)
+    const handle = this._events.get(type);
+    if (!handle) {
+        this._events.set(type, [fn]);
+    }else{
+        this._events.set(type, [...handle, fn]);
     }
   }
   // 触发事件
-  emit (type) {
-    let handle = this.events.get(type)
-    handle.apply(this, [...arguments].slice(1))
+  emit (type, ...args) {
+    let handle = this._events.get(type);
+    if(handle){
+        handle.map(fn => {
+            fn.apply(this, args);
+        });
+    }else{
+        handler.call(this);
+    }
+    return true;
   }
 }
+const emitter = new EventEmitter();
+export default emitter
 
-// 测试
-let emitter = new EventEmitter()
+
+import emitter from 'emitter';
 // 监听事件
 emitter.addListener('ages', age => {
   console.log(age)
@@ -218,7 +246,7 @@ emitter.addListener('ages', age => {
 // 触发事件
 emitter.emit('ages', 18)  // 18
 ```
-##### 11，实现一个双向数据绑定
+##### 12，实现一个双向数据绑定
 
 ```
 let obj = {}
@@ -242,7 +270,7 @@ input.addEventListener('keyup', function(e) {
   obj.text = e.target.value
 })
 ```
-##### 12，实现一个简单路由
+##### 13，实现一个简单路由
 
 ```
 class Route{
@@ -268,7 +296,7 @@ class Route{
   }   
 }
 ```
-##### 13，rem实现原理
+##### 14，rem实现原理
 
 ```
 function setRem () {
@@ -279,7 +307,7 @@ function setRem () {
   doc.style.fontSize = rem + 'px'
 }
 ```
-##### 14，手写Ajax
+##### 15，手写Ajax
 
 ```
 // 1. 简单实现
@@ -373,7 +401,7 @@ function ajax (options) {
   })
 }
 ```
-##### 15，实现拖拽
+##### 16，实现拖拽
 
 ```
 window.onload = function () {
@@ -409,20 +437,19 @@ window.onload = function () {
   }
 }
 ```
-##### 16，实现一个节流函数
+##### 17，实现一个节流函数（throttle）
 
 ```
 ##原理：在固定时间间隔内只执行一次操作
-##应用场景：耗时操作，比如用户点击按钮发送请求
+##应用场景：耗时操作，比如用户点击按钮发送请求，12306抢票，秒杀等
 function throttle (fn, delay) {
   // 利用闭包保存时间
   let prev = Date.now()
   return function () {
-    let context = this
-    let arg = arguments
-    let now = Date.now()
+    let now = Date.now();
     if (now - prev >= delay) {
-      fn.apply(context, arg)
+      fn.apply(this, arguments);
+      //或者 fn.call(this, ...arguments);
       prev = Date.now()
     }
   }
@@ -433,7 +460,7 @@ function fn () {
 }
 Element.addEventListener('scroll', throttle(fn, 1000)); 
 ```
-##### 17，实现一个防抖函数
+##### 18，实现一个防抖函数（debounce）
 
 ```
 ##原理：当用户停止操作并过指定时间后执行期望动作，如果在指定时间内又进行操作，会重新记时
@@ -458,14 +485,3 @@ function fn () {
 
 Element.addEventListener('scroll', debounce(fn, 1000));
 ```
-
-
-
-
-
-
-
-
-
-
-
