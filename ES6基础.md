@@ -1445,9 +1445,7 @@ B.__proto__ === A // true
 B.prototype.__proto__ === A.prototype // true
 ```
 
-
 ### 五，前端模块化
-#### AMD&CommonJs
 ES6的module出现之前，各语言模块加载工具
 ```
 Ruby：require
@@ -1455,7 +1453,7 @@ Python：import
 CSS：@import
 javascript：CommonJs&AMD
 ```
-##### CommonJs（用于Node环境）
+#### CommonJs
 三要素：module（模块标识），exports（模块定义），require（模块引用）
 
 ```
@@ -1464,18 +1462,26 @@ let name = 'liakng xie';
 let sayName = function () {
   console.log(name);
 };
-
+//CommonJs2导出模块方式
 module.exports = { name, sayName }
-// 或者
+// 或者 CommonJs1导出模块方式
 exports.sayName = sayName;
 
 //module.exports === exports
 ```
-module.export跟exports的区别
+##### module.export跟exports的区别
 1. module.exports 方法还可以单独返回一个数据类型(String、Number、Object...)，而 exports 只能返回一个 Object 对象
 2. 所有的 exports 对象最终都是通过 module.exports 传递执行，因此可以更确切地说，exports 是给 module.exports 添加属性和方法
 
-##### AMD（Asynchronous Module Definition：异步模块定义，用于浏览器环境）
+优点：
+1. 代码可复用于 Node.js 环境下并运行，例如做同构应用；
+2. 通过 NPM 发布的很多第三方模块都采用了 CommonJS 规范；
+
+缺点：
+1. 同步加载代码，会出现下面代码执行的情况；
+2. 代码无法直接运行在浏览器环境下，必须通过工具转换成标准的 ES5（例如babel）;
+
+#### AMD（Asynchronous Module Definition：异步模块定义，用于浏览器环境）
 通过define方法定义模块，require方法加载模块，[requireJs](https://requirejs.org/)实现的就是AMD规范
 
 ```
@@ -1496,6 +1502,13 @@ require(['module'], function(mod) {
    mod.sayName(); // likang xie
 })
 ```
+优点：
+1. 采用ES5规范定义模块，可在不转换代码的情况下直接在浏览器中运行；
+2. 可异步加载依赖；
+3. 可并行加载多个依赖；
+4. 代码可运行在浏览器环境和 Node.js 环境下；
+
+缺点：JS运行环境没有原生支持 AMD，需要先导入实现了 AMD 的库后才能正常使用
 
 #### ES6
 ##### export
@@ -1603,7 +1616,7 @@ export { foo, bar };
 #### ES6模块与CommonJs的区别
 1. CommonJS 模块输出的是一个值的拷贝，ES6 模块输出的是值的引用，ES6 模块不会缓存运行结果，而是动态地去被加载的模块取值，并且变量总是绑定其所在的模块；
 2. CommonJS 模块是运行时加载，ES6 模块是编译时输出接口；
+
 #### ES6模块与CommonJs模块相互加载
 1. node 会自动将module.exports属性当作模块的默认输出，即等同于export default xxx
 2. CommonJS 模块加载 ES6 模块，不能使用require命令，而要使用import()函数
-
