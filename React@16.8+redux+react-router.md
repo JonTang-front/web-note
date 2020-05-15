@@ -806,6 +806,7 @@ const withHtest = Comp => {
 4. 组件的ref不会被高阶组件获取，需要采用Refs转发；
 
 ### 二，React动画
+react-transition-group
 ### 三，组件懒加载
 React提供lazy和Suspense组件实现组件懒加载（code-splitting，代码分割），类似按需加载，渲染的时候才加载代码
 ```
