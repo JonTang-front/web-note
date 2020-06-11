@@ -419,7 +419,7 @@ React.children提供了一套处理this.props.children的工具，一般和React
 5. React.Children.toArray()，把this.props.children转换成Array，对children排序时需要使用。
 
 ### 三，组件
-#### Class组件（有状态组件，类组件） 
+#### Class组件（有状态组件，类组件，容器组件） 
 使用ES6的class继承React.Component定义组件，自己维护内部状态，以及接收父组件传递的props数据。
 ```
 import React, {Component} from 'react';
@@ -431,7 +431,7 @@ export default class Child extends Component{
     }
 }
 ```
-#### Function组件（无状态组件，渲染组件）
+#### Function组件（无状态组件，函数组件，渲染组件）
 一个返回JSX语句的JavaScript函数，接受props参数
 ```
 import React from 'react';
@@ -677,8 +677,16 @@ const ref = React.createRef();
 react是自上而下的单向数据流，在深层嵌套组件中通过props传递值，会使得很多中间组件发生不必要的props传递。Context提供了一种在组件之间共享此类值的方式，而不必显式地通过组件树的逐层传递 props。react提供了一组操作Context的API：
 1. createContext(defaultValue) —— 创建Context，defaultValue为Context默认值，Provider没有显示指定value的时候生效；
 2. Context.Provider —— Provider React 组件，接收一个value属性，传递给消费组件。多个 Provider 也可以嵌套使用，里层的会覆盖外层的数据。value值发生变化时，它内部的所有消费组件都会重新渲染。；
-3. Class.contextType —— 被重赋值为一个由 React.createContext() 创建的 Context 对象。这能让你使用 this.context 来消费最近 Context 上的那个值，可以在任何函数中访问；
-4. Context.Consumer —— 允许value以函数形式指定，并返回一个使用该Context的组件。
+3. Class.contextType —— 被赋值为一个由 React.createContext() 创建的 Context 对象。这能让你**在Class组件中**使用 this.context 来消费最近 Context 上的那个值，可以在任何函数中访问；
+4. Context.Consumer ——  允许value以回调函数参数形式指定，并返回一个使用该Context的组件。如：
+```
+<UserContext.Consumer>
+    {user => (
+        <ProfilePage user={user} />
+    )}
+</UserContext.Consumer>
+```
+
 ```
 //Context.js
 import {createContext} from 'react';
@@ -806,7 +814,6 @@ const withHtest = Comp => {
 4. 组件的ref不会被高阶组件获取，需要采用Refs转发；
 
 ### 二，React动画
-react-transition-group
 ### 三，组件懒加载
 React提供lazy和Suspense组件实现组件懒加载（code-splitting，代码分割），类似按需加载，渲染的时候才加载代码
 ```
@@ -844,7 +851,7 @@ Hook是一些可以让你在函数组件里使用react state和生命周期的�
 2. 只能在函数最外层使用Hook，不能在循环、条件判断或者子函数中调用。
 
 可以通过eslint-plugin-react-hooks插件来规范项目中使用的Hook
-#### React自带Hook
+#### 常用Hook
 ##### 1，useState
 用于函数组件添加state变量。普通函数退出后变量就会”消失”，而 state 中的变量会被 React 保留
 ```
@@ -874,57 +881,141 @@ setCount(1);
 ##相当于class组件的setState
 this.setState({ count: this.state.count + 1 })};
 ```
-==与setState不同的是，更新 state   变量总是替换它而不是合并它==
-##### 2，useEffect
+==与setState不同的是，更新 state   变量总是替换它而不是合并它，所以在update复杂结构state值的时候要格外注意==
+##### 2，useEffect && useLayoutEffect
 useEffect Hook 为函数组件提供执行副作用操作的能力，例如数据获取，设置订阅以及手动更改 React 组件中的 DOM 等。useEffect Hook  相当于componentDidMount，componentDidUpdate 和 componentWillUnmount 这三个函数的组合
 ```
 function Example() {
-  const [count, setCount] = useState(0);
+  const [times, setTimes] = useState(0);
 
   useEffect(() => {
-    document.title = `You clicked ${count} times`;
-  });
+    document.title = `You clicked ${times} times`;
+  }, [times]);
 }
 ```
-在函数组件内部调用useEffect hook，参数是一个回调函数（回调函数称之为effect）。在函数组件发生渲染时，都会执行该回调函数（包括首次渲染和更新渲染）
-
-如果想要清除副作用操作（effect），例如内存回收等，需要回调函数（effect）返回一个函数执行清除操作。在React 会在组件卸载的时候执行返回的函数进行清除操作
+- 执行机制：在函数组件内部调用useEffect Hook，第一个参数是回调函数（称之为effect）。在函数组件发生渲染时，都会执行该回调函数（包括首次渲染和更新渲染）
+- effect清除：effect中可能会有一些占用内存的操作，例如数据订阅等，需要在组件卸载的时候进行清除，释放内存。effect约定在执行下一次effect执行前或者组件卸载前执行effect中返回的函数进行清除操作，如下
 ```
 import React, { useState, useEffect } from 'react';
 
 function FriendStatus(props) {
-  const [isOnline, setIsOnline] = useState(null);
-
+  const [times, setTimes] = useState(0);
   useEffect(() => {
-    function handleStatusChange(status) {
-      setIsOnline(status.isOnline);
+    console.log('effect running', times);
+    return () => {
+      console.log('effect clear');
     }
-
-    ChatAPI.subscribeToFriendStatus(props.friend.id, handleStatusChange);
-    // Specify how to clean up after this effect:
-    return function cleanup() {
-      ChatAPI.unsubscribeFromFriendStatus(props.friend.id, handleStatusChange);
-    };
-  });
-
-  if (isOnline === null) {
-    return 'Loading...';
+  }, [times]);
+  const onClickHandle = () => {
+      setTimes(++times)
   }
-  return isOnline ? 'Online' : 'Offline';
+  return (<Button type="default" onClick={onClickHandle}></Button>);
+}
+//每次点击button（组建重新渲染）都会依次打印：
+//effect running
+//effect clear
+```
+- 性能优化：有时候并不希望每次发生组件重新渲染时，都执行effect，可以给useEffect传入第二个参数。第二个参数是一个依赖项数组，表示effect执行依赖哪些数据修改，默认值是 [] 。如果依赖的数据重新渲染前后没有发生改变，effect将不会被执行。如上例中的times
+
+> ###### useLayoutEffect：作用与 useEffect 相同，与 useEffect 不同的是，它会在所有的 DOM 变更之后同步调用 effect。可以使用它来读取 DOM 布局并同步触发重渲染。在浏览器执行绘制之前，useLayoutEffect 内部的更新计划将被同步刷新。使用不当，会出现视觉更新阻塞。
+
+##### 3，useRef && useImperativeHandle
+生成一个ref对象，ref.current 属性被初始化为传入的参数，该值在组件的整个生命周期内保持不变，每次渲染时返回同一个 ref 对象
+```
+const inputEl = useRef(Date.now());
+```
+与createRef()不同的是：
+
+- createRef生成的ref.current未被使用在DOM元素或者组件上时，始终是null，使用之后指向实际DOM或者组件实例；
+- useRef生成的ref.current被初始化为传入的参数，且在组件整个生命周期内不变，绑定到DOM后，.current指向实际DOM
+
+
+useImperativeHandle对应与ref转发，与 forwardRef 一起使用
+```
+useImperativeHandle(ref, createHandle, [deps])
+```
+
+##### 4，useMemo
+利用“创建函数”和依赖项数组，生成一个memoized值，且仅当某个依赖项渲染前后的值发生改变时，“创建函数”才会执行重新计算memoized值。如：
+```
+const memoizedValue = useMemo(() => return Math.sum(a, b), [a, b]);
+```
+- 创建函数在首次渲染时无条件执行；
+- 依赖项数组默认是 []，没有依赖项时，每次发生组件重新渲染都会执行；
+- 不要在“创建函数”中执行与渲染无关的操作，记住与useEffect的区别
+
+##### 5，useContext
+接收一个 context 对象（通过React.createContext API创建）并返回该 context 的当前值。useContext的参数必须是 context 对象本身，其值由距离最近的Context.Provider决定，并且使用的useContext的组件总会在 context 值变化时重新渲染。如：
+```
+const themes = {
+  light: {
+    foreground: "#000000",
+    background: "#eeeeee"
+  },
+  dark: {
+    foreground: "#ffffff",
+    background: "#222222"
+  }
+};
+
+const ThemeContext = React.createContext();
+
+function App() {
+  return (
+    <ThemeContext.Provider value={themes.dark}>
+      <>
+        ...<ThemedButton />
+      </>    
+    </ThemeContext.Provider>
+  );
+}
+function ThemedButton() {
+  const theme = useContext(ThemeContext);
+  return (
+    <button style={{ background: theme.background, color: theme.foreground }}>
+      I am styled by theme context!
+    </button>
+  );
 }
 ```
-##### 3，其他react hook
-1. useContext
-2. useReducer
-3. useCallback
-4. useMemo
-5. useRef
-6. useImperativeHandle
-7. useLayoutEffect
-8. useDebugValue
+如果context值修改引起的重新渲染组件的开销较大，可以通过使用 memoization 来优化
+##### 6，useReducer
+useReducer是useState的替代方案，解决state结构复杂，state使用前后相互依赖等问题。useReducer使用方法形如：
+```
+const [state, dispatch] = useReducer(reducer, initialArg, init);
+```
+参数：
+1. reducer：类似redux的reducer，(state, action) => newState；
+2. initialArg：state的初始值；
+3. init：惰性初始化state的函数，用于自定义state初始化，接受外部props，state重置等
+
+返回值（数组解构）：
+1. 当前state；
+2. dispatch：类似redux中的dispatch，用于触发action，修改state
+
+[完整案例查看](https://juejin.im/post/5ca467256fb9a05e545e46c6)
+
+
+##### 7，useCallback
+把内联回调函数及依赖项数组作为参数传入 useCallback，返回该回调函数的 memoized 版本，回调函数仅在某个依赖项改变时才会更新。相当于useMemo(() => fn, deps)返回传入的回调函数，而不是计算值
+```
+const memoizedCallback = useCallback(
+  () => {
+    doSomething(a, b);
+  },
+  [a, b],
+);
+```
+可以在某些特定的场景下调用memoizedCallback，而不需要触发组件重新渲染
+##### 8，useDebugValue
 
 #### 自定义Hook
-自定义Hook也是一个普通的JavaScript函数，可以在函数中执行react hook，且函数名必须以“use”开头，否则React 将无法自动检查你的 Hook 是否违反了 Hook 的规则
+1. 自定义Hook是一个普通的JavaScript函数，不受react约束，可以自行决定传入什么参数和返回什么结果；
+2. 函数名必须以“use”开头，否则React 将无法自动检查你的 Hook 是否违反了 Hook 的规则
+3. 只能在函数顶层无条件调用React Hook，不能在条件判断语句或者循环语句中调用；
+4. 每次使用自定义Hook，其中的所有 state 和副作用都是完全隔离的，不会产生交叉影响。
+
+简单来说，自定义Hook只是简单的公共逻辑代码提取，并且在其中可以调用React Hook，不会对使用者产生状态污染
 
 ### 五，性能优化
 #### React.PureComponent
@@ -954,13 +1045,24 @@ const Demo = React.memo((props) => {
 ```
 经过memo加工生成的组件拥有与PureComponent一样的能力，==解决函数组件无法使用PureComponent的问题==
 ### 六，diff 算法 & Virtual DOM
-将Virtual DOM（虚拟Dom）树转换成Actual DOM（真实Dom）树的最少操作的过程，叫作调和。diff算法是调和的具体实现，将O(n^3)复杂度 转化为 O(n)复杂度。React的diff算法采用三大策略：
-1. tree diff：对Dom树进行分层同级比较，不跨层级，O(n)可以完成对整个Virtual DOM树遍历；
-2. component diff：相同组件采用tree diff同级比较，不同组件采用删除替换整个组件的方式（可以在组件生命周期componentShouldUpdate中进行优化，或者PureComponent）；
-3. element diff：在同级比较的基础上，进行元素移动。移动规则：index>lastIndex时，max(index,lastIndex)进行移动。index表示元素在旧树中的同级标记位置，lastIndex表示新树当前遍历元素。若在旧树种找不到节点，则直接插入；遍历完成后，查找新树中存在，且在旧树中不存在的节点进行删除。
-所以（对同一层级的同组子节点） 添加唯一key进行区分至关重要，直接决定react组件的性能。
+将Virtual DOM（虚拟Dom）树转换成Actual DOM（真实Dom）树的最少操作的过程，叫作调和。diff算法是调和的具体实现，将O(n^3)复杂度 转化为 O(n)复杂度。
+diff算法原则：
+- 分层同级比较，不跨层比较；
+- 相同的组件生成的DOM结构类似；
+- 分组内的同级节点通过唯一的id进行区分（key）
 
-diff算法需要改进的地方：列表移动到列表首部时，需要移动元素(list.length-1)次。实际开发中，尽量避免列表尾部元素直接移动到首部的更新操作，在列表数据很庞大时，直接影响组件性能。
+##### 不同类型节点比较
+逐层比较，不同类型节点直接替换，组件经历unmount，mount
+##### 同类型，不同属性节点比较
+同类型节点一般会出现以下几种形式更新：
+1. 插入新的同级节点
+2. 删除同级节点
+3. 同级节点交换位置
+4. 更新节点属性
+
+节点移动规则：index>lastIndex时，max(index,lastIndex)进行移动。index表示元素在旧树中的同级标记位置，lastIndex表示新树当前遍历元素。若在旧树种找不到节点，则直接插入；遍历完成后，查找新树中存在，且在旧树中不存在的节点进行删除。==所以同级节点添加唯一的key进行区分至关重要，直接决定react组件的性能==
+
+diff算法需要改进的地方：列表尾部节点移动到列表首部时，需要移动元素(list.length-1)次。实际开发中，尽量避免列表尾部元素直接移动到首部的更新操作，在列表数据很庞大时，直接影响组件性能。
 
 ### 七，React API
 
