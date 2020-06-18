@@ -1,2 +1,2 @@
 # web-note
-personal study note about web
+个人前端学习笔记
