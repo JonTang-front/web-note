@@ -140,7 +140,7 @@ $ git add README.md
 $ git commit -am "readme"
 
 ##添加远程仓库（本地仓库和远程仓库建立连接）
-$ git remote add [origin:远程仓库名] [git@gitee.com:secuTang/test.git:远程仓库地址]
+$ git remote add [origin:远程仓库名] [ssh://git@gitee.com:secuTang/test.git:远程仓库地址]
 
 ##推送代码到远程仓库
 $ git push -u [origin:远程仓库名] [master:远程仓库分支]
@@ -148,8 +148,8 @@ $ git push -u [origin:远程仓库名] [master:远程仓库分支]
 ##### 多个远程仓库
 ```
 ##添加多个远程仓库
-$ git remote add [A:远程仓库名] [git@gitee.com:secuTang/A.git:远程仓库地址]
-$ git remote add [B:远程仓库名] [git@gitee.com:secuTang/B.git:远程仓库地址]
+$ git remote add [A:远程仓库名] [ssh://git@gitee.com:secuTang/A.git:远程仓库地址]
+$ git remote add [B:远程仓库名] [ssh://git@gitee.com:secuTang/B.git:远程仓库地址]
 
 ##与多个远程仓库建立连接
 $ git push -u 仓库A <branch-name>
@@ -174,7 +174,7 @@ $ git remote rename [old-name] [new-name]
 ##移除远程仓库
 $ git remote rm [remote-name]
 ```
-## 分支
+## 分支（branch）
 
 ```
 ##创建分支并切换到新创建的分支
@@ -193,9 +193,78 @@ $ git checkout <branch-name>
 $ git merge <branch-name>
 ##例如在master分支下执行命令，则合并<name>分支到master分支
 
-$ git branch -D <branch-name>
+$ git branch -d <branch-name>
 ##删除本地分支
 
 $ git push <远程仓库> --delete <branch-name>
 ##删除远程分支
+```
+## 标签（tag）
+Git 可以给仓库历史中的某一个提交打上标签，以示重要
+##### 创建tag
+1. 轻量标签
+
+本质上是只将提交校验和存储到一个文件中，不保存任何其他信息。创建轻量标签不需要任何参数，如：
+```
+$ git tag v1.4
+$ git show v1.4
+
+//不包含额外信息
+commit ca82a6dff817ec66f44342007202690a93763949
+Author: Scott Chacon <schacon@gee-mail.com>
+Date:   Mon Mar 17 21:52:11 2008 -0700
+
+    changed the version number
+```
+2. 附注标签
+
+附注标签是存储在 Git 数据库中的一个完整对象，可以被校验，其中包含打标签者的名字、电子邮件地址、日期时间， 此外还有一个标签信息。通常会建议创建附注标签，如：
+```
+$ git tag -a v1.4 -m "my version 1.4"
+```
+3. 后期打标签
+
+如果想要对已经提交的记录打标签，可以这样做：
+```
+$ git log --pretty=oneline
+b1a1cfc0e3272e50d874e2a7d3da78d00e04afa1 (HEAD -> saas/1.3.0, origin/saas/1.3.0) format dateTime
+359de061c66f1e62bc945bc15db0e490e97395dc Merge branch 'saas/1.3.0' of ssh://registry.code.tuya-inc.top:10023/TuyaFE-backendService/security into saas/1.3.0
+b01c951e02c45b4b5d65023e3801a4fd53dafee1 format dateTime
+cfd26f8e98238cd6e6113e426d7673394f75027b Merge remote-tracking branch 'origin/saas/1.3.0' into saas/1.3.0
+afee81af8164d5cb8dc267287d36afeacfd76058 fix channel add reg
+e4e672c7c60f440675960c441c70bba725092185 Merge branch 'saas/1.3.0' of ssh://registry.code.tuya-inc.top:10023/TuyaFE-backendService/security into saas/1.3.0
+7541ab90e6415fecc801d8aeaf67ccef150c20ff fix
+
+//假设要对“format dateTime”的提交打标签，找到提交对应的校验和
+$ git tag -a v1.3.0 b1a1cfc0
+```
+4. 推送标签到远程仓库
+
+默认情况下，git push 命令并不会传送标签到远程仓库服务器上，在创建完标签后你必须显式地推送标签到共享服务器上。如：
+```
+$ git push origin v1.5
+//--tags把所有不在远程仓库服务器上的标签全部推送上去
+$ git push origin --tags
+```
+##### 查看tag
+```
+$ git tag
+//查看通配符匹配的所有标签，必须带上参数-l或者--list
+$ git tag -l "v1.8.5*"
+//查看标签信息
+$ git show v1.3.0
+```
+##### 删除tag
+1. 删除本地仓库标签
+```
+$ git tag -d <tagname>
+```
+2. 删除远程仓库标签
+```
+$ git push origin --delete <tagname>
+```
+##### 标签检出
+查看某个标签所指向的文件版本，可以使用 git checkout 命令，如：
+```
+$ git checkout -b version2 v2.0.0
 ```
